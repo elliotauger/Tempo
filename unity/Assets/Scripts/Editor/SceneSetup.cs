@@ -91,22 +91,23 @@ public class SceneSetup : MonoBehaviour
         fairway.name = "Fairway";
         fairway.transform.position = Vector3.zero;
         fairway.transform.localScale = new Vector3(5f, 1f, 30f);
-        // Apply fairway shader if it exists
-        var fairwayShader = Shader.Find("Custom/FairwayStripes");
+        // Apply fairway material (URP compatible)
+        string matPath = "Assets/Materials";
+        EnsureFolder(matPath);
+
+        var fairwayShader = Shader.Find("Custom/FairwayStripesURP");
         if (fairwayShader != null)
         {
             var mat = new Material(fairwayShader);
             fairway.GetComponent<Renderer>().sharedMaterial = mat;
-            string matPath = "Assets/Materials";
-            EnsureFolder(matPath);
             AssetDatabase.CreateAsset(mat, matPath + "/FairwayMaterial.mat");
         }
         else
         {
-            // Fallback green material
-            var mat = new Material(Shader.Find("Standard"));
-            mat.color = new Color(0.15f, 0.45f, 0.1f);
+            // Fallback: URP Lit green material
+            var mat = CreateURPMaterial("FairwayFallback", new Color(0.15f, 0.45f, 0.1f));
             fairway.GetComponent<Renderer>().sharedMaterial = mat;
+            AssetDatabase.CreateAsset(mat, matPath + "/FairwayMaterial.mat");
         }
 
         // ── Body Pivot (parent for arms + club) ──
@@ -307,9 +308,21 @@ public class SceneSetup : MonoBehaviour
         var renderer = obj.GetComponent<Renderer>();
         if (renderer != null)
         {
-            var mat = new Material(Shader.Find("Standard"));
-            mat.color = color;
-            renderer.sharedMaterial = mat;
+            renderer.sharedMaterial = CreateURPMaterial(obj.name, color);
         }
+    }
+
+    static Material CreateURPMaterial(string name, Color color)
+    {
+        // Try URP Lit first, fall back to Standard
+        var shader = Shader.Find("Universal Render Pipeline/Lit");
+        if (shader == null)
+            shader = Shader.Find("Standard");
+
+        var mat = new Material(shader);
+        mat.name = name + "_Mat";
+        mat.SetColor("_BaseColor", color); // URP uses _BaseColor
+        mat.color = color; // Standard uses _Color (mat.color maps to it)
+        return mat;
     }
 }
