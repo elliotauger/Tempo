@@ -1,8 +1,11 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class SwingMechanic : MonoBehaviour
 {
+    [Header("Navigation")]
+    public string menuSceneName = "MainMenuScene";
     [Header("Node References")]
     public Camera mainCamera;
     public Transform bodyPivot;
@@ -86,6 +89,46 @@ public class SwingMechanic : MonoBehaviour
 
         if (shotLabel != null) shotLabel.gameObject.SetActive(false);
         if (powerBar != null) powerBar.gameObject.SetActive(false);
+
+        CreateBackButton();
+    }
+
+    void CreateBackButton()
+    {
+        // Find or create a canvas for the back button
+        Canvas canvas = shotLabel != null
+            ? shotLabel.GetComponentInParent<Canvas>()
+            : FindFirstObjectByType<Canvas>();
+        if (canvas == null) return;
+
+        var btnObj = new GameObject("BackButton");
+        btnObj.transform.SetParent(canvas.transform, false);
+        var rect = btnObj.AddComponent<RectTransform>();
+        rect.anchorMin = new Vector2(0f, 1f);
+        rect.anchorMax = new Vector2(0f, 1f);
+        rect.pivot = new Vector2(0f, 1f);
+        rect.anchoredPosition = new Vector2(20f, -20f);
+        rect.sizeDelta = new Vector2(120f, 50f);
+
+        var img = btnObj.AddComponent<Image>();
+        img.color = new Color(0.1f, 0.25f, 0.1f, 0.8f);
+
+        var btn = btnObj.AddComponent<Button>();
+        btn.onClick.AddListener(() => SceneManager.LoadScene(menuSceneName));
+
+        var textObj = new GameObject("Text");
+        textObj.transform.SetParent(btnObj.transform, false);
+        var textRect = textObj.AddComponent<RectTransform>();
+        textRect.anchorMin = Vector2.zero;
+        textRect.anchorMax = Vector2.one;
+        textRect.offsetMin = Vector2.zero;
+        textRect.offsetMax = Vector2.zero;
+        var text = textObj.AddComponent<Text>();
+        text.text = "< MENU";
+        text.fontSize = 24;
+        text.alignment = TextAnchor.MiddleCenter;
+        text.color = new Color(0.8f, 0.9f, 0.75f);
+        text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
     }
 
     void Update()
