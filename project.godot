@@ -6,7 +6,7 @@
 
 config/name="Tempo"
 config/description="A mobile golf game with tempo-based swing mechanics"
-run/main_scene="res://scenes/swing.tscn"
+run/main_scene="res://swing_scene.tscn"
 config/features=PackedStringArray("4.6", "Mobile")
 
 [display]
